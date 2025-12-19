@@ -8,6 +8,7 @@ if(CONFIG_ESP_HOSTED_ENABLED)
 		"${host_dir}/api/src/esp_hosted_api.c"
 		"${host_dir}/api/src/esp_hosted_transport_config.c"
 		"${host_dir}/api/src/esp_hosted_ota_api.c"
+		"${host_dir}/api/src/esp_hosted_custom.c"
 		"${host_dir}/drivers/transport/transport_drv.c"
 		"${host_dir}/drivers/serial/serial_ll_if.c"
 		"${host_dir}/utils/stats.c"

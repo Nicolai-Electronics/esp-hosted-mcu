@@ -41,6 +41,7 @@ void(*transport_esp_hosted_up_cb)(void) = NULL;
 transport_channel_t *chan_arr[ESP_MAX_IF];
 volatile uint8_t wifi_tx_throttling;
 void *bus_handle = NULL;
+static esp_hosted_custom_recv_cb_t* custom_callback = NULL;
 
 
 static volatile uint8_t transport_state = TRANSPORT_INACTIVE;
@@ -458,8 +459,10 @@ static void process_event(uint8_t *evt_buf, uint16_t len)
 			esp_hosted_power_save_init();
 #endif
 		}
+	} else if (custom_callback) {
+		custom_callback(event->event_type, event->event_data, event->event_len);
 	} else {
-		ESP_LOGW(TAG, "Drop unknown event\n\r");
+		ESP_LOGW(TAG, "Drop unhandled priv event\n\r");
 	}
 }
 
@@ -637,6 +640,39 @@ esp_err_t send_slave_config(uint8_t host_cap, uint8_t firmware_chip_id,
 	len += 2;
 
 	return esp_hosted_tx(ESP_PRIV_IF, 0, sendbuf, len, H_BUFF_NO_ZEROCOPY, sendbuf, g_h.funcs->_h_free, 0);
+}
+
+
+esp_err_t send_custom(uint8_t type, uint8_t* payload, uint16_t payload_length) {
+    struct esp_priv_event* event   = NULL;
+    uint16_t               len     = sizeof(struct esp_priv_event) + payload_length;
+    uint8_t*               sendbuf = NULL;
+
+    sendbuf = g_h.funcs->_h_malloc_align(MEMPOOL_ALIGNED(len),
+                                         MEMPOOL_ALIGNMENT_BYTES);
+    assert(sendbuf);
+
+    /* Populate event data */
+    event = (struct esp_priv_event*)(sendbuf);
+    event->event_type = type;
+	event->event_len = payload_length;
+	memcpy(event->event_data, payload, payload_length);
+
+	printf("Sending custom event type: 0x%02X, length: %u\n", type, payload_length);
+	for (int i = 0; i < payload_length; i++) {
+		printf("%02X ", event->event_data[i]);
+	}
+	printf("\r\n");
+
+    return esp_hosted_tx(ESP_PRIV_IF, 0, sendbuf, len, H_BUFF_NO_ZEROCOPY, sendbuf, g_h.funcs->_h_free, 0);
+}
+
+esp_err_t set_custom_callback(esp_hosted_custom_recv_cb_t* callback) {
+	if (!callback) {
+		return ESP_ERR_INVALID_ARG;
+	}
+	custom_callback = callback;
+	return ESP_OK;
 }
 
 static int transport_delayed_init(void)

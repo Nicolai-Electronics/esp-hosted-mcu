@@ -1162,18 +1162,12 @@ static void sdio_process_rx_task(void const* pvParameters)
 		} else if (buf_handle->if_type == ESP_PRIV_IF) {
 			ESP_LOGI(TAG, "Received ESP_PRIV_IF type message");
 			process_priv_communication(buf_handle);
-			hci_drv_show_configuration();
-			/* priv transaction received */
-			ESP_LOGI(TAG, "Received INIT event");
-
 			event = (struct esp_priv_event *) (buf_handle->payload);
-			ESP_LOGI(TAG, "Event type: 0x%x", event->event_type);
-			if (event->event_type != ESP_PRIV_EVENT_INIT) {
-				/* User can re-use this type of transaction */
-				ESP_LOGW(TAG, "Not an ESP_PRIV_EVENT_INIT event: 0x%x", event->event_type);
+			if (event->event_type == ESP_PRIV_EVENT_INIT) {
+				hci_drv_show_configuration();
+				ESP_LOGI(TAG, "Received INIT event");
+				sdio_start_write_thread = true;
 			}
-			ESP_LOGI(TAG, "Write thread started");
-			sdio_start_write_thread = true;
 		} else if (buf_handle->if_type == ESP_HCI_IF) {
 			hci_rx_handler(buf_handle->payload, buf_handle->payload_len);
 		} else if (buf_handle->if_type == ESP_TEST_IF) {

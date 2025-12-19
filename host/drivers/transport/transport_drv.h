@@ -20,6 +20,7 @@ extern "C" {
 #include "esp_hosted_api_types.h"
 #include "esp_hosted_interface.h"
 #include "esp_hosted_header.h"
+#include "esp_hosted_custom.h"
 
 #include "port_esp_hosted_host_config.h"
 
@@ -141,6 +142,9 @@ void process_priv_communication(interface_buffer_handle_t *buf_handle);
 
 esp_err_t send_slave_config(uint8_t host_cap, uint8_t firmware_chip_id,
 		uint8_t raw_tp_direction, uint8_t low_thr_thesh, uint8_t high_thr_thesh);
+
+esp_err_t send_custom(uint8_t type, uint8_t* payload, uint16_t payload_length);
+esp_err_t set_custom_callback(esp_hosted_custom_recv_cb_t* callback);
 
 uint8_t is_transport_rx_ready(void);
 uint8_t is_transport_tx_ready(void);
