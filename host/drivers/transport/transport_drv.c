@@ -42,6 +42,7 @@ transport_channel_t *chan_arr[ESP_MAX_IF];
 volatile uint8_t wifi_tx_throttling;
 void *bus_handle = NULL;
 static esp_hosted_custom_recv_cb_t* custom_callback = NULL;
+static esp_hosted_firwmare_version_cb_t* firmware_version_callback = NULL;
 
 
 static volatile uint8_t transport_state = TRANSPORT_INACTIVE;
@@ -675,6 +676,14 @@ esp_err_t set_custom_callback(esp_hosted_custom_recv_cb_t* callback) {
 	return ESP_OK;
 }
 
+esp_err_t esp_hosted_set_firmware_version_callback(esp_hosted_firwmare_version_cb_t* callback) {
+	if (!callback) {
+		return ESP_ERR_INVALID_ARG;
+	}
+	firmware_version_callback = callback;
+	return ESP_OK;
+}
+
 static int transport_delayed_init(void)
 {
 	ESP_LOGI(TAG, "transport_delayed_init");
@@ -763,6 +772,9 @@ static int process_init_event(uint8_t *evt_buf, uint16_t len)
 
 	// if ESP_PRIV_FIRMWARE_VERSION was not received, slave version will be 0.0.0
 	compare_fw_version(slave_fw_version);
+	if (firmware_version_callback) {
+		firmware_version_callback(slave_fw_version);
+	}
 
 	if ((chip_type != ESP_PRIV_FIRMWARE_CHIP_ESP32) &&
 		(chip_type != ESP_PRIV_FIRMWARE_CHIP_ESP32S2) &&
