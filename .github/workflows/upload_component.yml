@@ -1,8 +1,9 @@
-name: Push component to https://components.espressif.com
+name: Push components to Espressif Component Service
+
 on:
   push:
-    branches:
-      - main
+    tags:
+      - v*
 
 jobs:
   upload_components:
@@ -10,14 +11,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: "recursive"
-
-      - name : Copy common dir into slave
-        run: cp -r common slave/main/
-
-      - name: Upload component to the component registry
-        uses: espressif/upload-components-ci-action@v2
+          submodules: 'recursive'
+      - name: Upload components to component service
+        uses: espressif/upload-components-ci-action@v1
         with:
-          components: "esp_hosted:."
-          namespace: "espressif"
+          name: "esp-hosted-tanmatsu"
+          version: ${{ github.ref_name }}
+          namespace: "nicolaielectronics"
           api_token: ${{ secrets.IDF_COMPONENT_API_TOKEN }}
