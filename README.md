@@ -1,3 +1,11 @@
+# ESP-HOSTED fork for Tanmatsu
+
+This component is used for connecting to the radio on Tanmatsu.
+
+The goal is to get the changes made to the upstream ESP-HOSTED component integrated with the upstream version of ESP-HOSTED in the future.
+
+This version adds an alternative reset method and LoRa support for Tanmatsu hardware.
+
 # ESP-Hosted-MCU: Espressif SoCs as Communication Co-Processors
 
 [![Component Registry](https://components.espressif.com/components/espressif/esp_hosted/badge.svg)](https://components.espressif.com/components/espressif/esp_hosted)
